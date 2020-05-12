@@ -7,29 +7,25 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 )
 
-/*
-1. fetch the storyIds
-2. fetch the story details for each story Ids
-3. process it to list of links
-*/
-
-// type server struct{}
-
-/*
-func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "hello world"}`))
-}*/
+//StoryID ... exported story
 type StoryID struct {
 	Array []int64
 }
 
+//Story ... exported story
+type Story struct {
+	ID    int64  `json:"id"`
+	Title string `json:"title"`
+	URL   string `json:"url"`
+}
+
 func getHackerNews() {
 	storyIdsURL := "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
-	//storyDetailURL := "https://hacker-news.firebaseio.com/v0/item/story_identifier.json?print=pretty"
+	storyDetailURL := "https://hacker-news.firebaseio.com/v0/item/story_identifier.json?print=pretty"
 	storyIDJSON, err := http.Get(storyIdsURL)
 	if err != nil {
 		fmt.Print(err.Error())
@@ -39,18 +35,35 @@ func getHackerNews() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//storyList := string(topstoris)
 	arr := StoryID{}
 	err = json.Unmarshal([]byte(topstoris), &arr.Array)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	log.Printf("Unmarshaled: %v", arr[0:20])
-	//storyID := "23143888"
-
-	//storyDetailURL = strings.Replace(storyDetailURL, "story_identifier", storyID, -1)
-
+	top20StoryIDs := arr.Array[:20]
+	fmt.Printf("Top 20 stories: %v\n", top20StoryIDs)
+	for _, story := range top20StoryIDs {
+		url := strings.Replace(storyDetailURL, "story_identifier", strconv.FormatInt(story, 10), -1)
+		//fmt.Printf("Story url: %v\n", url)
+		detailsReq, err := http.Get(url)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		details, err := ioutil.ReadAll(detailsReq.Body)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		story := Story{}
+		err = json.Unmarshal([]byte(details), &story)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("Story contents: %v | %v | %v\n", story.Id, story.Title, story.Url)
+	}
 }
 
 // func home(w http.ResponseWriter, r *http.Request) {
