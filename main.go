@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 //StoryID ... exported story
@@ -23,7 +25,7 @@ type Story struct {
 	URL   string `json:"url"`
 }
 
-func getHackerNews() {
+func getHackerNews(w http.ResponseWriter, r *http.Request) {
 	storyIdsURL := "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
 	storyDetailURL := "https://hacker-news.firebaseio.com/v0/item/story_identifier.json?print=pretty"
 	storyIDJSON, err := http.Get(storyIdsURL)
@@ -31,6 +33,7 @@ func getHackerNews() {
 		fmt.Print(err.Error())
 		os.Exit(1)
 	}
+	defer storyIDJSON.Body.Close()
 	topstoris, err := ioutil.ReadAll(storyIDJSON.Body)
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +44,8 @@ func getHackerNews() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	top20StoryIDs := arr.Array[:20]
+	top20StoryIDs := arr.Array[:30]
+	HNData := make([]Story, 0)
 	fmt.Printf("Top 20 stories: %v\n", top20StoryIDs)
 	for _, story := range top20StoryIDs {
 		url := strings.Replace(storyDetailURL, "story_identifier", strconv.FormatInt(story, 10), -1)
@@ -51,6 +55,7 @@ func getHackerNews() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+		defer detailsReq.Body.Close()
 		details, err := ioutil.ReadAll(detailsReq.Body)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -62,21 +67,25 @@ func getHackerNews() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("Story contents: %v | %v | %v\n", story.Id, story.Title, story.Url)
+		HNData = append(HNData, story)
+		//fmt.Printf("Story contents: %v | %v | %v\n", story.ID, story.Title, story.URL)
+		//w.Write([]byte(details))
 	}
+	// for _, ekStory := range HNData {
+	// 	fmt.Println(ekStory)
+	// }
+	marshalledData, _ := json.Marshal(HNData)
+	fmt.Println(string(marshalledData))
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(marshalledData)
 }
 
-// func home(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	w.Write([]byte(`{"message": "hello world"}`))
-// }
-
 func main() {
-	//story_ids_url := "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
-	//story_detail_url := "https://hacker-news.firebaseio.com/v0/item/story_identifier.json?print=pretty"
-	// r := mux.NewRouter()
-	// r.HandleFunc("/", home)
-	// log.Fatal(http.ListenAndServe(":8080", r))
-	getHackerNews()
+	//getHackerNews()
+	r := mux.NewRouter()
+	//s := r.Host("www.localhost").Subrouter()
+
+	r.HandleFunc("/", getHackerNews)
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
