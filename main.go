@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -25,7 +26,11 @@ type Story struct {
 	URL   string `json:"url"`
 }
 
-func getHackerNews(w http.ResponseWriter, r *http.Request) {
+type HN struct {
+	HNJsonData []byte
+}
+
+func (a *HN) getHackerNews() {
 	storyIdsURL := "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
 	storyDetailURL := "https://hacker-news.firebaseio.com/v0/item/story_identifier.json?print=pretty"
 	storyIDJSON, err := http.Get(storyIdsURL)
@@ -67,6 +72,9 @@ func getHackerNews(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+		if len(story.URL) == 0 {
+			story.URL = string("https://news.ycombinator.com/item?id=") + strconv.FormatInt(story.ID, 10)
+		}
 		HNData = append(HNData, story)
 		//fmt.Printf("Story contents: %v | %v | %v\n", story.ID, story.Title, story.URL)
 		//w.Write([]byte(details))
@@ -74,18 +82,30 @@ func getHackerNews(w http.ResponseWriter, r *http.Request) {
 	// for _, ekStory := range HNData {
 	// 	fmt.Println(ekStory)
 	// }
-	marshalledData, _ := json.Marshal(HNData)
-	fmt.Println(string(marshalledData))
+	a.HNJsonData, _ = json.Marshal(HNData)
+	//return marshalledData
+}
+
+//HandleHackerNews...
+func (a *HN) HandleHackerNews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(marshalledData)
+	fmt.Println("Hello")
+	w.Write(a.HNJsonData)
 }
 
 func main() {
 	//getHackerNews()
+	var obj HN
+
+	go func() {
+		for {
+			obj.getHackerNews()
+			time.Sleep(5 * time.Minute)
+		}
+	}()
 	r := mux.NewRouter()
 	//s := r.Host("www.localhost").Subrouter()
-
-	r.HandleFunc("/", getHackerNews)
+	r.HandleFunc("/", obj.HandleHackerNews)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
