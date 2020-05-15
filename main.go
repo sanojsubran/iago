@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -89,6 +90,7 @@ func (a *HN) getHackerNews() {
 //HandleHackerNews...
 func (a *HN) HandleHackerNews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.WriteHeader(http.StatusOK)
 	fmt.Println("Hello")
 	w.Write(a.HNJsonData)
@@ -105,7 +107,10 @@ func main() {
 		}
 	}()
 	r := mux.NewRouter()
+	header := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
+	origins := handlers.AllowedOrigins([]string{"*"})
 	//s := r.Host("www.localhost").Subrouter()
 	r.HandleFunc("/", obj.HandleHackerNews)
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(header, methods, origins)(r)))
 }
