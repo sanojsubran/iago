@@ -20,7 +20,6 @@ type StoryID struct {
 	Array []int64
 }
 
-//Story ... exported story
 type Story struct {
 	ID    int64  `json:"id"`
 	Title string `json:"title"`
@@ -52,10 +51,8 @@ func (a *HN) getHackerNews() {
 	}
 	top20StoryIDs := arr.Array[:30]
 	HNData := make([]Story, 0)
-	fmt.Printf("Top 20 stories: %v\n", top20StoryIDs)
 	for _, story := range top20StoryIDs {
 		url := strings.Replace(storyDetailURL, "story_identifier", strconv.FormatInt(story, 10), -1)
-		//fmt.Printf("Story url: %v\n", url)
 		detailsReq, err := http.Get(url)
 		if err != nil {
 			fmt.Println(err.Error())
@@ -77,33 +74,27 @@ func (a *HN) getHackerNews() {
 			story.URL = string("https://news.ycombinator.com/item?id=") + strconv.FormatInt(story.ID, 10)
 		}
 		HNData = append(HNData, story)
-		//fmt.Printf("Story contents: %v | %v | %v\n", story.ID, story.Title, story.URL)
-		//w.Write([]byte(details))
 	}
-	// for _, ekStory := range HNData {
-	// 	fmt.Println(ekStory)
-	// }
 	a.HNJsonData, _ = json.Marshal(HNData)
-	//return marshalledData
 }
 
 //HandleHackerNews...
 func (a *HN) HandleHackerNews(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Received a request. Processing...")
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.WriteHeader(http.StatusOK)
-	fmt.Println("Hello")
 	w.Write(a.HNJsonData)
 }
 
 func main() {
 	//getHackerNews()
 	var obj HN
-
+	fmt.Println("Server listening on port:8080 ....")
 	go func() {
 		for {
 			obj.getHackerNews()
-			time.Sleep(5 * time.Minute)
+			time.Sleep(30 * time.Minute)
 		}
 	}()
 	r := mux.NewRouter()
