@@ -103,5 +103,5 @@ func main() {
 	origins := handlers.AllowedOrigins([]string{"*"})
 	//s := r.Host("www.localhost").Subrouter()
 	r.HandleFunc("/", obj.HandleHackerNews)
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(header, methods, origins)(r)))
+	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(header, methods, origins)(r)))
 }
