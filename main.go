@@ -3,105 +3,121 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"strings"
+	"sync"
 	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
-//StoryID ... exported story
-type StoryID struct {
-	Array []int64
+type NewsRequest struct {
+	mutex       *sync.Mutex
+	newsContent map[string][]storyEntry
 }
 
-type Story struct {
-	ID    int64  `json:"id"`
-	Title string `json:"title"`
-	URL   string `json:"url"`
-}
-
-type HN struct {
-	HNJsonData []byte
-}
-
-func (a *HN) getHackerNews() {
-	storyIdsURL := "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
-	storyDetailURL := "https://hacker-news.firebaseio.com/v0/item/story_identifier.json?print=pretty"
-	storyIDJSON, err := http.Get(storyIdsURL)
-	if err != nil {
-		fmt.Print(err.Error())
+func (n *NewsRequest) generateNewsStream() []byte {
+	n.mutex.Lock()
+	data, err := json.Marshal(n.newsContent)
+	n.mutex.Unlock()
+	if nil != err {
+		fmt.Println("Error: ", err.Error())
 		os.Exit(1)
 	}
-	defer storyIDJSON.Body.Close()
-	topstoris, err := ioutil.ReadAll(storyIDJSON.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	arr := StoryID{}
-	err = json.Unmarshal([]byte(topstoris), &arr.Array)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	top20StoryIDs := arr.Array[:30]
-	HNData := make([]Story, 0)
-	for _, story := range top20StoryIDs {
-		url := strings.Replace(storyDetailURL, "story_identifier", strconv.FormatInt(story, 10), -1)
-		detailsReq, err := http.Get(url)
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-		defer detailsReq.Body.Close()
-		details, err := ioutil.ReadAll(detailsReq.Body)
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-		story := Story{}
-		err = json.Unmarshal([]byte(details), &story)
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-		if len(story.URL) == 0 {
-			story.URL = string("https://news.ycombinator.com/item?id=") + strconv.FormatInt(story.ID, 10)
-		}
-		HNData = append(HNData, story)
-	}
-	a.HNJsonData, _ = json.Marshal(HNData)
+	return data
 }
 
-//HandleHackerNews...
-func (a *HN) HandleHackerNews(w http.ResponseWriter, r *http.Request) {
+func (n *NewsRequest) handleNewsReq(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Received a request. Processing...")
+	data := n.generateNewsStream()
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.WriteHeader(http.StatusOK)
-	w.Write(a.HNJsonData)
+	w.Write(data)
+}
+
+func (n *NewsRequest) updateNewsFeed(src string, data []storyEntry) {
+	n.mutex.Lock()
+	n.newsContent[src] = data
+	n.mutex.Unlock()
 }
 
 func main() {
-	//getHackerNews()
-	var obj HN
-	fmt.Println("Server listening on port:8080 ....")
+	r := mux.NewRouter()
+	news := NewsRequest{}
+
+	news.mutex = &sync.Mutex{}
+	news.newsContent = make(map[string][]storyEntry)
+
+	hn := hackerNews{"hacker_news"}
+	rdpgm := redditPgm{"reddit_pgm"}
+	rdcpp := redditCpp{"reddit_cpp"}
+	godev := golangDev{"golang_dev"}
+	reactdev := reactDev{"react_dev"}
+	tcrunch := techCrunch{"techcrunch"}
+	slashdot := slashDot{"slashdot"}
+
 	go func() {
 		for {
-			obj.getHackerNews()
-			time.Sleep(30 * time.Minute)
+			src, data := getFeed(rdpgm, 30)
+			news.updateNewsFeed(src, data)
+			time.Sleep(15 * time.Minute)
 		}
 	}()
-	r := mux.NewRouter()
+
+	go func() {
+		for {
+			src, data := getFeed(hn, 30)
+			news.updateNewsFeed(src, data)
+			time.Sleep(15 * time.Minute)
+		}
+	}()
+
+	go func() {
+		for {
+			src, data := getFeed(rdcpp, 30)
+			news.updateNewsFeed(src, data)
+			time.Sleep(15 * time.Minute)
+		}
+	}()
+
+	go func() {
+		for {
+			src, data := getFeed(godev, 10)
+			news.updateNewsFeed(src, data)
+			time.Sleep(15 * time.Minute)
+		}
+	}()
+
+	go func() {
+		for {
+			src, data := getFeed(reactdev, 10)
+			news.updateNewsFeed(src, data)
+			time.Sleep(15 * time.Minute)
+		}
+	}()
+
+	go func() {
+		for {
+			src, data := getFeed(tcrunch, 10)
+			news.updateNewsFeed(src, data)
+			time.Sleep(15 * time.Minute)
+		}
+	}()
+
+	go func() {
+		for {
+			src, data := getFeed(slashdot, 10)
+			news.updateNewsFeed(src, data)
+			time.Sleep(15 * time.Minute)
+		}
+	}()
+
 	header := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
-	//s := r.Host("www.localhost").Subrouter()
-	r.HandleFunc("/", obj.HandleHackerNews)
+	r.HandleFunc("/", news.handleNewsReq)
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(header, methods, origins)(r)))
 }
