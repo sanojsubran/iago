@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -29,6 +28,7 @@ type JSONRCPPContent struct {
 }
 
 func (rdp redditCpp) readData(count int16) (string, []storyEntry) {
+	stories := make([]storyEntry, 0)
 	url := "https://www.reddit.com/r/cpp/new.json?limit=count"
 	url = strings.Replace(url, "count", strconv.FormatInt(int64(count), 10), -1)
 	client := &http.Client{}
@@ -36,23 +36,22 @@ func (rdp redditCpp) readData(count int16) (string, []storyEntry) {
 	req.Header.Set("user-agent", "webapp iago")
 	resp, err := client.Do(req)
 	if nil != err {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		fmt.Println("Unable to query the redditcpp site. Error: " + err.Error())
+		return rdp.newsSrc, stories
 	}
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if nil != err {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		fmt.Println("Unable to read the body of redditcpp response. Error: " + err.Error())
+		return rdp.newsSrc, stories
 	}
 	story := JSONRCPPContent{}
 	err = json.Unmarshal(b, &story)
 	if nil != err {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		fmt.Println("Unable to unmarshall the data from redditcpp. Error: " + err.Error())
+		return rdp.newsSrc, stories
 	}
 	children := story.Data.Children
-	stories := make([]storyEntry, 0)
 	for index, child := range children {
 		stories = append(stories, storyEntry{
 			Id:    int64(index),

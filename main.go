@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -23,8 +22,8 @@ func (n *NewsRequest) generateNewsStream() []byte {
 	data, err := json.Marshal(n.newsContent)
 	n.mutex.Unlock()
 	if nil != err {
-		fmt.Println("Error: ", err.Error())
-		os.Exit(1)
+		fmt.Println("Unable to marshal the json data. Error: " + err.Error())
+		return []byte{}
 	}
 	return data
 }
@@ -56,8 +55,8 @@ func main() {
 	rdcpp := redditCpp{"reddit_cpp"}
 	godev := golangDev{"golang_dev"}
 	reactdev := reactDev{"react_dev"}
-	tcrunch := techCrunch{"techcrunch"}
-	slashdot := slashDot{"slashdot"}
+	//tcrunch := techCrunch{"techcrunch"}
+	//slashdot := slashDot{"slashdot"}
 
 	go func() {
 		for {
@@ -99,21 +98,21 @@ func main() {
 		}
 	}()
 
-	go func() {
-		for {
-			src, data := getFeed(tcrunch, 10)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		src, data := getFeed(tcrunch, 10)
+	// 		news.updateNewsFeed(src, data)
+	// 		time.Sleep(15 * time.Minute)
+	// 	}
+	// }()
 
-	go func() {
-		for {
-			src, data := getFeed(slashdot, 10)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		src, data := getFeed(slashdot, 10)
+	// 		news.updateNewsFeed(src, data)
+	// 		time.Sleep(15 * time.Minute)
+	// 	}
+	// }()
 
 	header := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})

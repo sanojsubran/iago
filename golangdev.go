@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/mmcdole/gofeed"
 )
@@ -14,14 +13,14 @@ type golangDev struct {
 
 func (gd golangDev) readData(count int16) (string, []storyEntry) {
 	fp := gofeed.NewParser()
+	stories := make([]storyEntry, 0)
 	feed, _ := fp.ParseURL("https://blog.golang.org/feed.atom")
 	jsonContent := RSSFeedContent{}
 	err := json.Unmarshal([]byte(feed.String()), &jsonContent)
 	if nil != err {
-		fmt.Println("Error: ", err.Error())
-		os.Exit(1)
+		fmt.Println("Unable to unmarshall the data from golangdev. Error: " + err.Error())
+		return gd.newsSrc, stories
 	}
-	stories := make([]storyEntry, 0)
 	for index, story := range jsonContent.Items {
 		stories = append(stories, storyEntry{
 			Id:    int64(index),
