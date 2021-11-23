@@ -16,6 +16,10 @@ func (tc techCrunch) readData(count int16) (string, []storyEntry) {
 	stories := make([]storyEntry, 0)
 	feed, _ := fp.ParseURL("https://techcrunch.com/feed/")
 	jsonContent := RSSFeedContent{}
+	if feed.String() == "" {
+		fmt.Println("Empty data received from the source")
+		return tc.newsSrc, stories
+	}
 	err := json.Unmarshal([]byte(feed.String()), &jsonContent)
 	if nil != err {
 		fmt.Println("Unable to unmarshal the data from TC. Error: ", err.Error())
