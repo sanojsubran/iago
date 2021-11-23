@@ -15,6 +15,10 @@ func (rd reactDev) readData(count int16) (string, []storyEntry) {
 	stories := make([]storyEntry, 0)
 	fp := gofeed.NewParser()
 	feed, _ := fp.ParseURL("https://reactjs.org/feed.xml")
+	if feed.String() == "" {
+		fmt.Println("Empty data received from the source")
+		return rd.newsSrc, stories
+	}
 	jsonContent := RSSFeedContent{}
 	err := json.Unmarshal([]byte(feed.String()), &jsonContent)
 	if nil != err {
