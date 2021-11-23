@@ -16,6 +16,10 @@ func (sd slashDot) readData(count int16) (string, []storyEntry) {
 	fp := gofeed.NewParser()
 	feed, _ := fp.ParseURL("http://rss.slashdot.org/Slashdot/slashdotMain")
 	jsonContent := RSSFeedContent{}
+	if feed.String() == "" {
+		fmt.Println("Empty data received from the source")
+		return sd.newsSrc, stories
+	}
 	err := json.Unmarshal([]byte(feed.String()), &jsonContent)
 	if nil != err {
 		fmt.Println("Unable to unmarshal the data from Slashdot. Error: ", err.Error())
