@@ -30,6 +30,10 @@ type redditClient struct {
 	count int
 }
 
+func (rd redditClient) clientName() string {
+	return rd.name
+}
+
 // readData implements the fetching of data from reddit's sub topics
 func (rd redditClient) readData() (feedContent, error) {
 

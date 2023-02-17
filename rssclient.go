@@ -23,11 +23,15 @@ type rssClient struct {
 	count int
 }
 
-func (c rssClient) readData() (feedContent, error) {
+func (rss rssClient) clientName() string {
+	return rss.name
+}
+
+func (rss rssClient) readData() (feedContent, error) {
 	fp := gofeed.NewParser()
 	data := feedContent{}
 
-	feed, err := fp.ParseURL(c.url)
+	feed, err := fp.ParseURL(rss.url)
 	if err != nil {
 		logrus.Warn("error occurred while fetching the feed")
 		return data, err
@@ -50,8 +54,8 @@ func (c rssClient) readData() (feedContent, error) {
 	}
 
 	data = feedContent{
-		Title:   c.name,
-		Article: stories[:c.count],
+		Title:   rss.name,
+		Article: stories[:rss.count],
 	}
 
 	return data, nil

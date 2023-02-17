@@ -17,6 +17,10 @@ type hnClient struct {
 	count int
 }
 
+func (hn hnClient) clientName() string {
+	return hn.name
+}
+
 func (hn hnClient) readData() (feedContent, error) {
 	storyList, err := hn.getStoryIDList()
 	if err != nil {
