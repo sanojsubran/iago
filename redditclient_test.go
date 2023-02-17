@@ -8,22 +8,27 @@ import (
 
 func TestRedditFeed(t *testing.T) {
 	testcases := map[string]struct {
+		name  string
 		url   string
 		count int
 	}{
 		"reddit_programming": {
+			name:  "programming",
 			url:   "https://www.reddit.com/r/programming/top.json?limit=",
 			count: 10,
 		},
 		"reddit_cpp": {
+			name:  "cpp",
 			url:   "https://www.reddit.com/r/cpp/top.json?limit=",
 			count: 10,
 		},
 		"reddit_soccer": {
+			name:  "soccer",
 			url:   "https://www.reddit.com/r/soccer/top.json?limit=",
 			count: 10,
 		},
 		"reddit_japan": {
+			name:  "japan",
 			url:   "https://www.reddit.com/r/japan/top.json?limit=",
 			count: 10,
 		},
@@ -33,6 +38,7 @@ func TestRedditFeed(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 
 			client := redditClient{
+				name:  test.name,
 				url:   test.url,
 				count: test.count,
 			}

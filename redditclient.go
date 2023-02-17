@@ -25,6 +25,7 @@ type RedditJsonType struct {
 
 // redditClient defines the readData interface method and fetches the data from reddit.
 type redditClient struct {
+	name  string
 	url   string
 	count int
 }
@@ -69,7 +70,7 @@ func (rd redditClient) readData() (feedContent, error) {
 	}
 
 	data := feedContent{
-		Title:   rd.url,
+		Title:   rd.name,
 		Article: stories,
 	}
 

@@ -13,7 +13,7 @@ import (
 
 // hnClient defines the readData interface method and fetches the data from hacker news.
 type hnClient struct {
-	url   string
+	name  string
 	count int
 }
 
@@ -39,7 +39,7 @@ func (hn hnClient) readData() (feedContent, error) {
 	}
 
 	data := feedContent{
-		Title:   hn.url,
+		Title:   hn.name,
 		Article: finalStoryList[:],
 	}
 

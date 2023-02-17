@@ -18,6 +18,7 @@ type rssFeedType struct {
 
 // rssClient defines the readData interface method and fetches the data from the rss data source.
 type rssClient struct {
+	name  string
 	url   string
 	count int
 }
@@ -49,7 +50,7 @@ func (c rssClient) readData() (feedContent, error) {
 	}
 
 	data = feedContent{
-		Title:   c.url,
+		Title:   c.name,
 		Article: stories[:c.count],
 	}
 
