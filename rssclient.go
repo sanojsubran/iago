@@ -22,7 +22,6 @@ type rssClient struct {
 	count int
 }
 
-// "https://techcrunch.com/feed/"
 func (c rssClient) readData() (feedContent, error) {
 	fp := gofeed.NewParser()
 	data := feedContent{}
