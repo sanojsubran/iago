@@ -55,6 +55,7 @@ func (hn hnClient) getStoryIDList() ([]int64, error) {
 
 	storyListJson, err := http.Get(storyListApi)
 	defer storyListJson.Body.Close()
+
 	if nil != err {
 		fmt.Println("unable to reach the Url: " + storyListApi + " Error: " + err.Error())
 		return nil, err

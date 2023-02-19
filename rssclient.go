@@ -40,7 +40,7 @@ func (rss rssClient) readData() (feedContent, error) {
 	jsonContent := rssFeedType{}
 	err = json.Unmarshal([]byte(feed.String()), &jsonContent)
 	if nil != err {
-		fmt.Println("Unable to unmars hal the data from TC. Error: ", err.Error())
+		fmt.Println("Unable to unmarshal the data from TC. Error: ", err.Error())
 		return data, err
 	}
 
