@@ -54,7 +54,7 @@ func main() {
 	rdpgm := redditPgm{"reddit_pgm"}
 	rdcpp := redditCpp{"reddit_cpp"}
 	//godev := golangDev{"golang_dev"}
-	reactdev := reactDev{"react_dev"}
+	//reactdev := reactDev{"react_dev"}
 	tcrunch := techCrunch{"techcrunch"}
 	slashdot := slashDot{"slashdot"}
 
@@ -90,13 +90,13 @@ func main() {
 	// 	}
 	// }()
 
-	go func() {
-		for {
-			src, data := getFeed(reactdev, 10)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
+	//go func() {
+	//	for {
+	//		src, data := getFeed(reactdev, 10)
+	//		news.updateNewsFeed(src, data)
+	//		time.Sleep(15 * time.Minute)
+	//	}
+	//}()
 
 	go func() {
 		for {
