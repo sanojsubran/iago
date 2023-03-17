@@ -1,122 +1,59 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/knadh/koanf"
+	"github.com/knadh/koanf/parsers/json"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/sirupsen/logrus"
+
+	iago "github.com/sanojsubran/iago/pkg/iago"
 )
 
-type NewsRequest struct {
-	mutex       *sync.Mutex
-	newsContent map[string][]storyEntry
-}
+// Global koanf instance. Use "." as the key path delimiter. This can be "/" or any character.
+var k = koanf.New(".")
 
-func (n *NewsRequest) generateNewsStream() []byte {
-	n.mutex.Lock()
-	data, err := json.Marshal(n.newsContent)
-	n.mutex.Unlock()
-	if nil != err {
-		fmt.Println("Unable to marshal the json data. Error: " + err.Error())
-		return []byte{}
+func readConfig() {
+	// Load JSON config.s
+	if err := k.Load(file.Provider("./config.json"), json.Parser()); err != nil {
+		log.Fatalf("error loading config: %v", err)
 	}
-	return data
-}
-
-func (n *NewsRequest) handleNewsReq(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Received a request. Processing...")
-	data := n.generateNewsStream()
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.WriteHeader(http.StatusOK)
-	w.Write(data)
-}
-
-func (n *NewsRequest) updateNewsFeed(src string, data []storyEntry) {
-	n.mutex.Lock()
-	n.newsContent[src] = data
-	n.mutex.Unlock()
 }
 
 func main() {
+	//TODO To be implemented later
+	//readConfig()
+
+	sources := make([]iago.NewsSource, 0)
+
+	//TODO: populate the sources with configured news sources
+
 	r := mux.NewRouter()
-	news := NewsRequest{}
+	var news iago.NewsHandler
 
-	news.mutex = &sync.Mutex{}
-	news.newsContent = make(map[string][]storyEntry)
-
-	hn := hackerNews{"hacker_news"}
-	rdpgm := redditPgm{"reddit_pgm"}
-	rdcpp := redditCpp{"reddit_cpp"}
-	//godev := golangDev{"golang_dev"}
-	reactdev := reactDev{"react_dev"}
-	tcrunch := techCrunch{"techcrunch"}
-	slashdot := slashDot{"slashdot"}
+	news.Init()
 
 	go func() {
 		for {
-			src, data := getFeed(rdpgm, 30)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
-
-	go func() {
-		for {
-			src, data := getFeed(hn, 30)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
-
-	go func() {
-		for {
-			src, data := getFeed(rdcpp, 30)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
-
-	// go func() {
-	// 	for {
-	// 		src, data := getFeed(godev, 10)
-	// 		news.updateNewsFeed(src, data)
-	// 		time.Sleep(15 * time.Minute)
-	// 	}
-	// }()
-
-	go func() {
-		for {
-			src, data := getFeed(reactdev, 10)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
-
-	go func() {
-		for {
-			src, data := getFeed(tcrunch, 10)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
-
-	go func() {
-		for {
-			src, data := getFeed(slashdot, 10)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
+			for _, source := range sources {
+				err := news.UpdateFeed(source)
+				if err != nil {
+					logrus.Errorf("unable to fetch the data from %s at %d", source.Topic, time.Now().Unix())
+				}
+			}
+			time.Sleep(60 * time.Minute)
 		}
 	}()
 
 	header := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
-	r.HandleFunc("/", news.handleNewsReq)
+	r.HandleFunc("/", news.HandleNewsReq)
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(header, methods, origins)(r)))
+
 }

@@ -1,0 +1,12 @@
+{
+  "rss" : {
+    "react_dev" : "https://reactjs.org/feed.xml",
+    "slashdot" : "http://rss.slashdot.org/Slashdot/slashdotMain",
+    "golang_dev" : "https://blog.golang.org/feed.atom",
+    "tech_crunch" : "https://techcrunch.com/feed/"
+  },
+  "hacker_news" : "",
+  "reddit" : {
+    "programming" : ""
+  }
+}

@@ -1,4 +1,4 @@
-package main
+package iago
 
 import (
 	"testing"
@@ -6,30 +6,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRedditFeed(t *testing.T) {
+func TestRSSFeed(t *testing.T) {
 	testcases := map[string]struct {
 		name  string
 		url   string
 		count int
 	}{
-		"reddit_programming": {
-			name:  "programming",
-			url:   "https://www.reddit.com/r/programming/top.json?limit=",
+		"techcrunch": {
+			name:  "techcrunch",
+			url:   "https://techcrunch.com/feed/",
 			count: 10,
 		},
-		"reddit_cpp": {
-			name:  "cpp",
-			url:   "https://www.reddit.com/r/cpp/top.json?limit=",
+		"slashdot": {
+			name:  "slashdot",
+			url:   "http://rss.slashdot.org/Slashdot/slashdotMain",
 			count: 10,
 		},
-		"reddit_soccer": {
-			name:  "soccer",
-			url:   "https://www.reddit.com/r/soccer/top.json?limit=",
+		"reactdev": {
+			name:  "reactdev",
+			url:   "https://reactjs.org/feed.xml",
 			count: 10,
 		},
-		"reddit_japan": {
-			name:  "japan",
-			url:   "https://www.reddit.com/r/japan/top.json?limit=",
+		"godev": {
+			name:  "go.dev",
+			url:   "https://go.dev/blog/feed.atom",
 			count: 10,
 		},
 	}
@@ -37,7 +37,7 @@ func TestRedditFeed(t *testing.T) {
 	for name, test := range testcases {
 		t.Run(name, func(t *testing.T) {
 
-			client := redditClient{
+			client := rssClient{
 				name:  test.name,
 				url:   test.url,
 				count: test.count,

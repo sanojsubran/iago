@@ -1,4 +1,4 @@
-package main
+package iago
 
 import (
 	"testing"
