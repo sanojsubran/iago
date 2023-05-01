@@ -26,6 +26,7 @@ func main() {
 
 	go func() {
 		for {
+
 			for _, source := range sources {
 				err := news.UpdateFeed(source)
 				if err != nil {
@@ -33,6 +34,7 @@ func main() {
 				}
 			}
 			time.Sleep(60 * time.Minute)
+      
 		}
 	}()
 
