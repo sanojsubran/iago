@@ -1,12 +1,43 @@
 {
-  "rss" : {
-    "react_dev" : "https://reactjs.org/feed.xml",
-    "slashdot" : "http://rss.slashdot.org/Slashdot/slashdotMain",
-    "golang_dev" : "https://blog.golang.org/feed.atom",
-    "tech_crunch" : "https://techcrunch.com/feed/"
+  "sources" :
+[
+  {
+    "url" : "https://reactjs.org/feed.xml",
+    "clientType" : "rss",
+    "topic" : "reactdev",
+    "entryCount" : 10
   },
-  "hacker_news" : "",
-  "reddit" : {
-    "programming" : ""
+  {
+    "url" : "http://rss.slashdot.org/Slashdot/slashdotMain",
+    "clientType" : "rss",
+    "topic" : "slashdot",
+    "entryCount" : 10
+  },
+  {
+    "url" : "https://go.dev/blog/feed.atom",
+    "clientType" : "rss",
+    "topic" : "godev",
+    "entryCount" : 10
+  },
+  {
+    "url" : "https://techcrunch.com/feed/",
+    "clientType" : "rss",
+    "topic" : "techcrunch",
+    "entryCount" : 10
+  },
+  {
+    "url" : "https://www.reddit.com/r/cpp/new.json?limit=count",
+    "clientType" : "reddit",
+    "topic" : "reddit_cpp",
+    "entryCount" : 10
+  },
+  {
+    "url" : "",
+    "clientType" : "hackernews",
+    "topic" : "hackernews",
+    "entryCount" : 30
   }
+]
 }
+
+
