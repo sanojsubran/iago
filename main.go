@@ -34,14 +34,16 @@ func main() {
 				}
 			}
 			time.Sleep(60 * time.Minute)
-      
+
 		}
 	}()
 
 	header := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
+
 	r.HandleFunc("/", news.HandleNewsRequests)
+
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(header, methods, origins)(r)))
 
 }
