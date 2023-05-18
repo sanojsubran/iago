@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"log"
 	"net/http"
 	"time"
 
@@ -45,6 +44,6 @@ func main() {
 	logrus.Info("Starting IAGO. Waiting for requests...")
 	r.HandleFunc("/", news.HandleNewsRequests)
 
-	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(header, methods, origins)(r)))
+	logrus.Fatal(http.ListenAndServe(":8081", handlers.CORS(header, methods, origins)(r)))
 
 }
