@@ -42,6 +42,7 @@ func main() {
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
 	origins := handlers.AllowedOrigins([]string{"*"})
 
+	logrus.Info("Starting IAGO. Waiting for requests...")
 	r.HandleFunc("/", news.HandleNewsRequests)
 
 	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(header, methods, origins)(r)))
