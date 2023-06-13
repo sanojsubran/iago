@@ -51,20 +51,20 @@ func main() {
 	news.newsContent = make(map[string][]storyEntry)
 
 	hn := hackerNews{"hacker_news"}
-	rdpgm := redditPgm{"reddit_pgm"}
-	rdcpp := redditCpp{"reddit_cpp"}
-	//godev := golangDev{"golang_dev"}
+	//rdpgm := redditPgm{"reddit_pgm"}
+	//rdcpp := redditCpp{"reddit_cpp"}
+	godev := golangDev{"golang_dev"}
 	//reactdev := reactDev{"react_dev"}
 	tcrunch := techCrunch{"techcrunch"}
 	slashdot := slashDot{"slashdot"}
 
-	go func() {
-		for {
-			src, data := getFeed(rdpgm, 30)
-			news.updateNewsFeed(src, data)
-			time.Sleep(15 * time.Minute)
-		}
-	}()
+	//go func() {
+	//	for {
+	//		src, data := getFeed(rdpgm, 30)
+	//		news.updateNewsFeed(src, data)
+	//		time.Sleep(15 * time.Minute)
+	//	}
+	//}()
 
 	go func() {
 		for {
@@ -74,21 +74,21 @@ func main() {
 		}
 	}()
 
+	//go func() {
+	//	for {
+	//		src, data := getFeed(rdcpp, 30)
+	//		news.updateNewsFeed(src, data)
+	//		time.Sleep(15 * time.Minute)
+	//	}
+	//}()
+
 	go func() {
 		for {
-			src, data := getFeed(rdcpp, 30)
+			src, data := getFeed(godev, 10)
 			news.updateNewsFeed(src, data)
 			time.Sleep(15 * time.Minute)
 		}
 	}()
-
-	// go func() {
-	// 	for {
-	// 		src, data := getFeed(godev, 10)
-	// 		news.updateNewsFeed(src, data)
-	// 		time.Sleep(15 * time.Minute)
-	// 	}
-	// }()
 
 	//go func() {
 	//	for {

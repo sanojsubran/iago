@@ -14,7 +14,7 @@ type golangDev struct {
 func (gd golangDev) readData(count int16) (string, []storyEntry) {
 	fp := gofeed.NewParser()
 	stories := make([]storyEntry, 0)
-	feed, _ := fp.ParseURL("https://blog.golang.org/feed.atom")
+	feed, _ := fp.ParseURL("https://go.dev/blog/feed.atom")
 	if feed.String() == "" {
 		fmt.Println("Empty data received from the source")
 		return gd.newsSrc, stories
