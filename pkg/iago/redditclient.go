@@ -2,6 +2,7 @@ package iago
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -44,10 +45,14 @@ func (rd redditClient) readData() (feedContent, error) {
 	req.Header.Set("user-agent", "webapp iago")
 
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 	if nil != err {
 		logrus.Error("unable to query the reddit site. Error: " + err.Error())
 		return feedContent{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return feedContent{}, errors.New("query to reddit returned HTTP error code:" + strconv.Itoa(resp.StatusCode))
 	}
 
 	b, err := io.ReadAll(resp.Body)

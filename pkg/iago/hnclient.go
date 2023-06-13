@@ -2,6 +2,7 @@ package iago
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,6 +29,9 @@ func (hn hnClient) readData() (feedContent, error) {
 		return feedContent{}, err
 	}
 
+	if hn.count >= len(storyList) {
+		hn.count = len(storyList)
+	}
 	topStoryIds := storyList[:hn.count]
 
 	finalStoryList := make([]story, 0)
@@ -42,6 +46,10 @@ func (hn hnClient) readData() (feedContent, error) {
 		finalStoryList = append(finalStoryList, s)
 	}
 
+	if len(finalStoryList) == 0 {
+		return feedContent{}, errors.New("failed to retrieve the story details. Returning empty list")
+	}
+
 	data := feedContent{
 		Title:   hn.name,
 		Article: finalStoryList[:],
@@ -54,12 +62,11 @@ func (hn hnClient) getStoryIDList() ([]int64, error) {
 	storyListApi := "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
 
 	storyListJson, err := http.Get(storyListApi)
-	defer storyListJson.Body.Close()
-
 	if nil != err {
 		fmt.Println("unable to reach the Url: " + storyListApi + " Error: " + err.Error())
 		return nil, err
 	}
+	defer storyListJson.Body.Close()
 
 	topStories, err := io.ReadAll(storyListJson.Body)
 	if nil != err {
