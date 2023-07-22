@@ -29,7 +29,7 @@ func main() {
 			for _, source := range sources {
 				err := news.UpdateFeed(source)
 				if err != nil {
-					logrus.Errorf("unable to fetch the data from %s at %d", source.Topic, time.Now().Unix())
+					logrus.Errorf("unable to fetch the data from %s at %v", source.Topic, time.Now().UTC())
 				}
 			}
 			time.Sleep(60 * time.Minute)
